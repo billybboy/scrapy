@@ -1,5 +1,5 @@
 import scrapy
-
+from spider1.items import BookItem
 
 class BookdetailspiderSpider(scrapy.Spider):
     name = "bookDetailspider"
@@ -35,20 +35,22 @@ class BookdetailspiderSpider(scrapy.Spider):
     def parse_book_page(self, response):
         # 對每本書的細節進行爬蟲
         table_rows = response.css('table tr')
+        book_item = BookItem()
 
-        yield{
-            'url' : response.url,
-            'title' : response.css('.product_main h1::text').get(),
-            'type' : table_rows[1].css('ts ::text').get(), # 因為已經變成list所以index從0開始
-            'price_excl_tax' : table_rows[2].css('ts ::text').get(),
-            'price_incl_tax' : table_rows[3].css('ts ::text').get(),
-            'tax' : table_rows[4].css('ts ::text').get(),
-            'availability' : table_rows[5].css('ts ::text').get(),
-            'num_reviews' : table_rows[6].css('ts ::text').get(),
-            'stars' : response.css('p.star-rating').attrib['class'],
-            'category' : response.xpath('//ul[@class="breadcrumb"]/li[3]/a/text()').get(),
-            'description' : response.xpath('//article[@class="product_page"]/p/text()').get(),
-            # 也可以寫成 'description' : response.xpath('//div[@id="product_description"]/following-sibling::p/text()').get()
-            'price' : response.css('p.price-color::text').get(),
-        }
 
+        book_item['url'] = response.url,
+        book_item['title'] = response.css('.product_main h1::text').get(),
+        book_item['upc'] = table_rows[0].css('td::text').get(),
+        book_item['type'] = table_rows[1].css('td::text').get(), # 因為已經變成list所以index從0開始
+        book_item['price_excl_tax'] = table_rows[2].css('td::text').get(),
+        book_item['price_incl_tax'] = table_rows[3].css('td::text').get(),
+        book_item['tax'] = table_rows[4].css('td::text').get(),
+        book_item['availability'] = table_rows[5].css('td::text').get(),
+        book_item['num_reviews'] = table_rows[6].css('td::text').get(),
+        book_item['stars'] = response.css('p.star-rating').attrib['class'],
+        book_item['category'] = response.xpath('//ul[@class="breadcrumb"]/li[3]/a/text()').get(),
+        book_item['description'] = response.xpath('//article[@class="product_page"]/p/text()').get(),
+        # 也可以寫成 'description' : response.xpath('//div[@id="product_description"]/following-sibling::p/text()').get()
+        book_item['price'] = response.css('p.price_color::text').get(),
+
+        yield book_item
